@@ -1,10 +1,3 @@
-/*
- * 室外无人驾驶自行车 - 上位机图像处理代码（详细注释版）
- * 任务：静止30秒、赛道巡线、锥桶避障、斑马线检测、转向标志识别变道、
- * 开发环境：OpenCV 4.x, C++11
- * 硬件平台：工控机 + USB摄像头
- */
-
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <iomanip>
