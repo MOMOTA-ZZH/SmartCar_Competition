@@ -1,0 +1,25 @@
+# 忽略编译生成的临时文件夹
+Debug/
+Release/
+Objects/
+Settings/
+
+# 忽略具体的编译中间文件
+*.o
+*.d
+*.crf
+*.dep
+*.lst
+*.map
+*.htm
+
+# 忽略可执行文件（根据需要，如果你想保留hex可以去掉这行）
+*.elf
+*.axf
+*.hex
+*.bin
+
+# 忽略IDE产生的配置文件夹
+.settings/
+.vscode/
+.idea/
