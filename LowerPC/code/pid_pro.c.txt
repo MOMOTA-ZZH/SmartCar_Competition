@@ -1,0 +1,279 @@
+/*
+ * pid_pro.c
+ * pid_pro算法
+ *  Created on: 2024年11月18日
+ *      Author: 554.
+ */
+#include <pid_pro.h.txt>
+
+/*************************** PID参数初始化 ******************************/
+static void f_PID_param_init(
+    PID_TypeDef *pid,                 // PID控制器结构体指针
+    uint16_t max_out,                 // PID输出最大值限制
+    uint16_t intergral_limit,         // 积分项限制
+    float deadband,                   // 死区（偏差绝对值小于此值时不输出）
+
+    float kp,                         // 比例系数
+    float Ki,                         // 积分系数
+    float Kd,                         // 微分系数
+
+    float Changing_Integral_A,        // 动态积分系数A
+    float Changing_Integral_B,        // 动态积分系数B
+
+    float output_filtering_coefficient, // 输出滤波系数
+    float derivative_filtering_coefficient, // 微分滤波系数
+
+    uint8_t improve)                  // 增强控制选项
+{
+    pid->DeadBand = deadband;                 // 设置死区
+    pid->IntegralLimit = intergral_limit;     // 积分限制
+    pid->MaxOut = max_out;                    // 输出最大值限制
+    pid->MaxErr = max_out * 2;                // 错误最大值限制
+    pid->Target = 0;                          // 初始目标值
+
+    pid->Kp = kp;                             // 设置比例系数
+    pid->Ki = Ki;                             // 设置积分系数
+    pid->Kd = Kd;                             // 设置微分系数
+    pid->ITerm = 0;                           // 积分项初始化
+
+    pid->ScalarA = Changing_Integral_A;       // 动态积分A系数
+    pid->ScalarB = Changing_Integral_B;       // 动态积分B系数
+
+    pid->Output_Filtering_Coefficient = output_filtering_coefficient; // 输出滤波系数
+    pid->Derivative_Filtering_Coefficient = derivative_filtering_coefficient; // 微分滤波系数
+
+    pid->Improve = improve;                   // 增强选项标志位
+
+    pid->ERRORHandler.ERRORCount = 0;         // 错误计数初始化
+    pid->ERRORHandler.ERRORType = PID_ERROR_NONE; // 错误类型初始化
+
+    pid->Output = 0;                          // 输出初始化
+}
+
+/************************** PID参数重置 *********************************/
+static void f_PID_reset(PID_TypeDef *pid, float Kp, float Ki, float Kd)
+{
+    pid->Kp = Kp;            // 重新设置比例系数
+    pid->Ki = Ki;            // 重新设置积分系数
+    pid->Kd = Kd;            // 重新设置微分系数
+
+    if (pid->Ki == 0)        // 如果积分系数为0，则积分项置0
+        pid->Iout = 0;
+}
+
+/*************************** PID计算 **********************************/
+float PID_Calculate(PID_TypeDef *pid, float measure, float target)
+{
+
+#if Motor_ERROR
+
+    if (pid->Improve & ErrorHandle) { // 若增强选项包含错误处理
+        f_PID_ErrorHandle(pid);       // 进行错误处理
+        if (pid->ERRORHandler.ERRORType != PID_ERROR_NONE) { // 若有错误
+            pid->Output = 0;          // 输出置零
+            return 0;                 // 返回0
+        }
+    }
+#endif
+
+    pid->Measure = measure;           // 更新测量值
+    pid->Target = target;             // 设置目标值
+    pid->Err = pid->Target - pid->Measure; // 计算误差
+
+//    if (ABS(pid->Err) > pid->DeadBand) { // 若误差超出死区
+        pid->Pout = pid->Kp * pid->Err;  // 计算比例项
+        pid->ITerm = pid->Ki * pid->Err; // 计算积分项
+        pid->Dout = pid->Kd * (pid->Err - pid->Last_Err); // 计算微分项
+
+        if (pid->Improve & Trapezoid_Intergral) // 若增强选项包含梯形积分
+            f_Trapezoid_Intergral(pid);          // 进行梯形积分
+
+        if (pid->Improve & ChangingIntegralRate) // 若增强选项包含动态积分率
+            f_Changing_Integral_Rate(pid);       // 进行动态积分率调整
+
+        if (pid->Improve & Integral_Limit)       // 若增强选项包含积分限制
+            f_Integral_Limit(pid);               // 进行积分限制
+
+        if (pid->Improve & Derivative_On_Measurement) // 若增强选项包含测量值微分
+            f_Derivative_On_Measurement(pid);    // 进行测量值微分处理 微分先行
+
+        if (pid->Improve & DerivativeFilter)     // 若增强选项包含微分滤波
+            f_Derivative_Filter(pid);            // 进行微分滤波
+
+        pid->Iout += pid->ITerm;                 // 更新积分输出
+
+        pid->Output = pid->Pout + pid->Iout + pid->Dout; // 计算总输出
+
+        if (pid->Improve & OutputFilter)         // 若增强选项包含输出滤波
+            f_Output_Filter(pid);                // 进行输出滤波
+
+        f_Output_Limit(pid);                     // 限制输出值
+
+        f_Proportion_Limit(pid);                 // 限制比例输出
+//    }
+    pid->Last_Measure = pid->Measure;            // 更新上次测量值
+    pid->Last_Output = pid->Output;              // 更新上次输出
+    pid->Last_Dout = pid->Dout;                  // 更新上次微分项
+    pid->Last_Err = pid->Err;                    // 更新上次误差
+
+    return pid->Output;                          // 返回计算出的PID输出
+}
+
+/***************** PID 增强函数 *********************/
+static void f_Trapezoid_Intergral(PID_TypeDef *pid)
+{
+    pid->ITerm = pid->Ki * ((pid->Err + pid->Last_Err) / 2); // 梯形积分计算
+}
+
+static void f_Changing_Integral_Rate(PID_TypeDef *pid)
+{
+    if (pid->Err * pid->Iout > 0) { // 判断积分项和误差符号是否相同
+        if (ABS(pid->Err) <= pid->ScalarB)       // 若误差小于动态积分系数B
+            return; // 完全积分
+        if (ABS(pid->Err) <= (pid->ScalarA + pid->ScalarB))
+            pid->ITerm *= (pid->ScalarA - ABS(pid->Err) + pid->ScalarB) / pid->ScalarA;
+        else
+            pid->ITerm = 0; // 积分项置零
+    }
+}
+
+static void f_Integral_Limit(PID_TypeDef *pid)
+{
+    float temp_Output, temp_Iout;
+    temp_Iout = pid->Iout + pid->ITerm;          // 暂存积分输出
+    temp_Output = pid->Pout + pid->Iout + pid->Dout; // 计算总输出
+
+    if (ABS(temp_Output) > pid->MaxOut) {
+        if (pid->Err * pid->Iout > 0)
+            pid->ITerm = 0;                     // 积分项置零
+    }
+
+    if (temp_Iout > pid->IntegralLimit) {       // 判断积分项上限
+        pid->ITerm = 0;
+        pid->Iout = pid->IntegralLimit;
+    }
+    if (temp_Iout < -pid->IntegralLimit) {      // 判断积分项下限
+        pid->ITerm = 0;
+        pid->Iout = -pid->IntegralLimit;
+    }
+}
+
+/************************** 微分项基于测量值的微分 **************************/
+static void f_Derivative_On_Measurement(PID_TypeDef *pid)
+{
+    // 使用测量值进行微分项计算，这在某些控制策略中有助于抑制噪声
+    pid->Dout = pid->Kd * (pid->Last_Measure - pid->Measure);
+}
+
+/*************************** 微分滤波 ***************************/
+static void f_Derivative_Filter(PID_TypeDef *pid)
+{
+    // 应用微分滤波，避免微分项对输出的剧烈影响
+    pid->Dout = pid->Dout * pid->Derivative_Filtering_Coefficient +
+                pid->Last_Dout * (1 - pid->Derivative_Filtering_Coefficient);
+}
+
+/*************************** 输出滤波 ***************************/
+static void f_Output_Filter(PID_TypeDef *pid)
+{
+    // 使用输出滤波系数平滑控制器输出，减缓响应突变
+    pid->Output = pid->Output * pid->Output_Filtering_Coefficient +
+                  pid->Last_Output * (1 - pid->Output_Filtering_Coefficient);
+}
+
+/*************************** 输出限幅 ***************************/
+static void f_Output_Limit(PID_TypeDef *pid)
+{
+    // 限制输出在最大值和最小值之间，防止输出过大
+    if (pid->Output > pid->MaxOut)
+    {
+        pid->Output = pid->MaxOut;
+    }
+    if (pid->Output < -(pid->MaxOut))
+    {
+        pid->Output = -(pid->MaxOut);
+    }
+}
+
+/*************************** 比例输出限幅 ***************************/
+static void f_Proportion_Limit(PID_TypeDef *pid)
+{
+    // 限制比例输出项，确保控制输出不过度依赖于比例部分
+    if (pid->Pout > pid->MaxOut)
+    {
+        pid->Pout = pid->MaxOut;
+    }
+    if (pid->Pout < -(pid->MaxOut))
+    {
+        pid->Pout = -(pid->MaxOut);
+    }
+}
+
+/***************** PID 错误处理函数 *********************/
+#if Motor_ERROR
+
+static void f_PID_ErrorHandle(PID_TypeDef *pid)
+{
+    /* 处理电机阻塞的情况 */
+
+    // 如果输出小于最大输出的1%，则跳过处理
+    if (pid->Output < pid->MaxOut * 0.01f)
+        return;
+
+    // 如果误差超出目标的90%，则计为电机可能被阻塞
+    if ((ABS(pid->Target - pid->Measure) / pid->Target) > 0.9f)
+    {
+        // 计数电机阻塞的次数
+        pid->ERRORHandler.ERRORCount++;
+    }
+    else
+    {
+        // 否则重置阻塞计数
+        pid->ERRORHandler.ERRORCount = 0;
+    }
+
+    // 如果阻塞计数超过1000次，判定为电机阻塞
+    if (pid->ERRORHandler.ERRORCount > 1000)
+    {
+        pid->ERRORHandler.ERRORType = Motor_Blocked; // 设置错误类型为电机阻塞
+    }
+}
+#endif
+
+/***************** PID 控制器结构体初始化 *********************/
+/*例
+//pid函数连接
+PID_Init(&PID_Example, 9600, 5000, 0, 3, 1, 5, 0.3, 0.3, 100, 100,
+         ErrorHandle | Integral_Limit | OutputFilter);
+
+//修改kp ki kd
+PID_Example.PID_reset(&PID_Example, 3, 1, 0);
+
+//计算
+PID_Calculate(&PID_Example, measure, target);
+*/
+
+void PID_Init(
+    PID_TypeDef *pid,                       // PID结构体指针
+    uint16_t max_out,                       // 最大输出
+    uint16_t intergral_limit,               // 积分项限制
+    float deadband,                         // 死区
+
+    float kp,                               // 比例系数
+    float Ki,                               // 积分系数
+    float Kd,                               // 微分系数
+
+    float A,                                // 动态积分系数A   A-B之间按比例调整积分项
+    float B,                                // 动态积分系数B   B以下完全积分
+
+    float output_filtering_coefficient,     // 输出滤波系数
+    float derivative_filtering_coefficient, // 微分滤波系数
+    uint8_t improve)                        // 增强选项标志位
+{
+    // 设置PID控制器的各项参数
+    pid->sPID_param_init = f_PID_param_init;
+    pid->PID_reset = f_PID_reset;
+    pid->sPID_param_init(pid, max_out, intergral_limit, deadband,
+                        kp, Ki, Kd, A, B, output_filtering_coefficient, derivative_filtering_coefficient, improve);
+}
+

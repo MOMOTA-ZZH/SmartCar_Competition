@@ -1,0 +1,137 @@
+/*
+ * pid_pro.h
+ *
+ *  Created on: 2024年11月18日
+ *      Author: 554.
+ */
+#ifndef _PID_H
+#define _PID_H
+#include "stdint.h"
+
+// 计算绝对值的宏定义
+#define ABS(x) ((x > 0) ? x : -x)
+
+#define Motor_ERROR           (0)
+
+// PID 增强功能枚举定义，便于选择不同的控制策略
+typedef enum pid_Improvement_e
+{
+    NONE = 0X00,                        // 无增强功能
+    Integral_Limit = 0x01,              // 积分限幅功能
+    Derivative_On_Measurement = 0x02,   // 基于测量值的微分项
+    Trapezoid_Intergral = 0x04,         // 梯形积分
+    Proportional_On_Measurement = 0x08, // 基于测量值的比例控制
+    OutputFilter = 0x10,                // 输出滤波
+    ChangingIntegralRate = 0x20,        // 动态积分调整
+    DerivativeFilter = 0x40,            // 微分滤波
+    ErrorHandle = 0x80,                 // 错误处理
+} PID_Improvement_e;
+
+// 错误类型枚举，用于指示控制中的错误状态
+typedef enum errorType_e
+{
+    PID_ERROR_NONE = 0x00U,             // 无错误
+    Motor_Blocked = 0x01U               // 电机阻塞错误
+} ErrorType_e;
+
+// PID 错误处理结构体，包含错误计数和错误类型
+typedef struct
+{
+    uint64_t ERRORCount;                // 错误计数
+    ErrorType_e ERRORType;              // 错误类型
+} PID_ErrorHandler_t;
+
+// PID 控制器的主结构体定义
+typedef struct _PID_TypeDef
+{
+    float Target;                       // 目标值
+    float LastNoneZeroTarget;           // 上一次非零目标值
+    float Kp;                           // 比例系数
+    float Ki;                           // 积分系数
+    float Kd;                           // 微分系数
+
+    float Measure;                      // 当前测量值
+    float Last_Measure;                 // 上一次测量值
+    float Err;                          // 当前误差
+    float Last_Err;                     // 上一次误差
+
+    float Pout;                         // 比例输出项
+    float Iout;                         // 积分输出项
+    float Dout;                         // 微分输出项
+    float ITerm;                        // 当前积分项
+
+    float Output;                       // PID 输出
+    float Last_Output;                  // 上一次输出
+    float Last_Dout;                    // 上一次微分项
+
+    float MaxOut;                       // 输出的最大值
+    float IntegralLimit;                // 积分项限制
+    float DeadBand;                     // 死区
+    float ControlPeriod;                // 控制周期
+    float MaxErr;                       // 最大误差
+    float ScalarA;                      // 动态积分调整系数A
+    float ScalarB;                      // 动态积分调整系数B
+    float Output_Filtering_Coefficient; // 输出滤波系数
+    float Derivative_Filtering_Coefficient; // 微分滤波系数
+
+    uint32_t thistime;                  // 当前时间戳
+    uint32_t lasttime;                  // 上一次时间戳
+    uint8_t dtime;                      // 控制周期时间差
+
+    uint8_t Improve;                    // 增强选项的标志位
+
+    PID_ErrorHandler_t ERRORHandler;    // 错误处理结构体
+
+    // 初始化PID参数的函数指针
+    void (*sPID_param_init)(
+        struct _PID_TypeDef *pid,
+        uint16_t maxOut,
+        uint16_t integralLimit,
+        float deadband,
+        float Kp,
+        float ki,
+        float kd,
+        float A,
+        float B,
+        float output_filtering_coefficient,
+        float derivative_filtering_coefficient,
+        uint8_t improve);
+
+    // 重置PID系数的函数指针
+    void (*PID_reset)(
+        struct _PID_TypeDef *pid,
+        float Kp,
+        float ki,
+        float kd);
+} PID_TypeDef;
+
+/************************** PID 函数声明 **************************/
+static void f_Trapezoid_Intergral(PID_TypeDef *pid);        // 梯形积分函数
+static void f_Integral_Limit(PID_TypeDef *pid);             // 积分限幅函数
+static void f_Derivative_On_Measurement(PID_TypeDef *pid);  // 基于测量值的微分函数
+static void f_Changing_Integral_Rate(PID_TypeDef *pid);     // 动态积分调整函数
+static void f_Output_Filter(PID_TypeDef *pid);              // 输出滤波函数
+static void f_Derivative_Filter(PID_TypeDef *pid);          // 微分滤波函数
+static void f_Output_Limit(PID_TypeDef *pid);               // 输出限幅函数
+static void f_Proportion_Limit(PID_TypeDef *pid);           // 比例限幅函数
+static void f_PID_ErrorHandle(PID_TypeDef *pid);            // 错误处理函数
+
+// PID 初始化函数，设置PID控制器参数
+void PID_Init(
+    PID_TypeDef *pid,
+    uint16_t max_out,
+    uint16_t intergral_limit,
+    float deadband,
+    float kp,
+    float ki,
+    float kd,
+    float A,
+    float B,
+    float output_filtering_coefficient,
+    float derivative_filtering_coefficient,
+    uint8_t improve);
+
+// PID 计算函数，根据当前测量值和目标值计算输出
+float PID_Calculate(PID_TypeDef *pid, float measure, float target);
+
+#endif

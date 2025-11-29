@@ -1,0 +1,126 @@
+################################################################################
+# Automatically-generated file. Do not edit!
+################################################################################
+
+# Add inputs and outputs from these tool invocations to the build variables 
+O_SRCS += \
+"../libraries/infineon_libraries/Assert.o" \
+"../libraries/infineon_libraries/Bsp.o" \
+"../libraries/infineon_libraries/CompilerDcc.o" \
+"../libraries/infineon_libraries/CompilerGhs.o" \
+"../libraries/infineon_libraries/CompilerGnuc.o" \
+"../libraries/infineon_libraries/CompilerTasking.o" \
+"../libraries/infineon_libraries/IfxAsclin.o" \
+"../libraries/infineon_libraries/IfxAsclin_Asc.o" \
+"../libraries/infineon_libraries/IfxAsclin_PinMap.o" \
+"../libraries/infineon_libraries/IfxAsclin_cfg.o" \
+"../libraries/infineon_libraries/IfxCan_PinMap.o" \
+"../libraries/infineon_libraries/IfxCan_cfg.o" \
+"../libraries/infineon_libraries/IfxCcu6.o" \
+"../libraries/infineon_libraries/IfxCcu6_PinMap.o" \
+"../libraries/infineon_libraries/IfxCcu6_Timer.o" \
+"../libraries/infineon_libraries/IfxCcu6_cfg.o" \
+"../libraries/infineon_libraries/IfxCpu.o" \
+"../libraries/infineon_libraries/IfxCpu_Irq.o" \
+"../libraries/infineon_libraries/IfxCpu_cfg.o" \
+"../libraries/infineon_libraries/IfxDma.o" \
+"../libraries/infineon_libraries/IfxDma_Dma.o" \
+"../libraries/infineon_libraries/IfxDma_cfg.o" \
+"../libraries/infineon_libraries/IfxDmu_PinMap.o" \
+"../libraries/infineon_libraries/IfxEdsadc_PinMap.o" \
+"../libraries/infineon_libraries/IfxEray_PinMap.o" \
+"../libraries/infineon_libraries/IfxEray_cfg.o" \
+"../libraries/infineon_libraries/IfxEvadc.o" \
+"../libraries/infineon_libraries/IfxEvadc_Adc.o" \
+"../libraries/infineon_libraries/IfxEvadc_PinMap.o" \
+"../libraries/infineon_libraries/IfxEvadc_cfg.o" \
+"../libraries/infineon_libraries/IfxFlash.o" \
+"../libraries/infineon_libraries/IfxFlash_cfg.o" \
+"../libraries/infineon_libraries/IfxGeth_PinMap.o" \
+"../libraries/infineon_libraries/IfxGeth_cfg.o" \
+"../libraries/infineon_libraries/IfxGpt12.o" \
+"../libraries/infineon_libraries/IfxGpt12_IncrEnc.o" \
+"../libraries/infineon_libraries/IfxGpt12_PinMap.o" \
+"../libraries/infineon_libraries/IfxGtm.o" \
+"../libraries/infineon_libraries/IfxGtm_Atom.o" \
+"../libraries/infineon_libraries/IfxGtm_Atom_Pwm.o" \
+"../libraries/infineon_libraries/IfxGtm_Cmu.o" \
+"../libraries/infineon_libraries/IfxGtm_Dpll.o" \
+"../libraries/infineon_libraries/IfxGtm_Dtm.o" \
+"../libraries/infineon_libraries/IfxGtm_PinMap.o" \
+"../libraries/infineon_libraries/IfxGtm_Psm.o" \
+"../libraries/infineon_libraries/IfxGtm_Spe.o" \
+"../libraries/infineon_libraries/IfxGtm_Tbu.o" \
+"../libraries/infineon_libraries/IfxGtm_Tim.o" \
+"../libraries/infineon_libraries/IfxGtm_Tom.o" \
+"../libraries/infineon_libraries/IfxGtm_cfg.o" \
+"../libraries/infineon_libraries/IfxHssl_cfg.o" \
+"../libraries/infineon_libraries/IfxI2c_PinMap.o" \
+"../libraries/infineon_libraries/IfxI2c_cfg.o" \
+"../libraries/infineon_libraries/IfxMsc_PinMap.o" \
+"../libraries/infineon_libraries/IfxMsc_cfg.o" \
+"../libraries/infineon_libraries/IfxMtu.o" \
+"../libraries/infineon_libraries/IfxMtu_cfg.o" \
+"../libraries/infineon_libraries/IfxPmsEvr.o" \
+"../libraries/infineon_libraries/IfxPmsPm.o" \
+"../libraries/infineon_libraries/IfxPms_PinMap.o" \
+"../libraries/infineon_libraries/IfxPort.o" \
+"../libraries/infineon_libraries/IfxPort_PinMap.o" \
+"../libraries/infineon_libraries/IfxPort_cfg.o" \
+"../libraries/infineon_libraries/IfxPsi5_PinMap.o" \
+"../libraries/infineon_libraries/IfxPsi5_cfg.o" \
+"../libraries/infineon_libraries/IfxPsi5s_PinMap.o" \
+"../libraries/infineon_libraries/IfxQspi.o" \
+"../libraries/infineon_libraries/IfxQspi_PinMap.o" \
+"../libraries/infineon_libraries/IfxQspi_SpiMaster.o" \
+"../libraries/infineon_libraries/IfxQspi_cfg.o" \
+"../libraries/infineon_libraries/IfxScuCcu.o" \
+"../libraries/infineon_libraries/IfxScuEru.o" \
+"../libraries/infineon_libraries/IfxScuLbist.o" \
+"../libraries/infineon_libraries/IfxScuRcu.o" \
+"../libraries/infineon_libraries/IfxScuWdt.o" \
+"../libraries/infineon_libraries/IfxScu_PinMap.o" \
+"../libraries/infineon_libraries/IfxScu_cfg.o" \
+"../libraries/infineon_libraries/IfxSent_PinMap.o" \
+"../libraries/infineon_libraries/IfxSent_cfg.o" \
+"../libraries/infineon_libraries/IfxSmu_PinMap.o" \
+"../libraries/infineon_libraries/IfxSmu_cfg.o" \
+"../libraries/infineon_libraries/IfxSrc.o" \
+"../libraries/infineon_libraries/IfxSrc_cfg.o" \
+"../libraries/infineon_libraries/IfxStdIf_DPipe.o" \
+"../libraries/infineon_libraries/IfxStdIf_Pos.o" \
+"../libraries/infineon_libraries/IfxStdIf_PwmHl.o" \
+"../libraries/infineon_libraries/IfxStdIf_Timer.o" \
+"../libraries/infineon_libraries/IfxStm.o" \
+"../libraries/infineon_libraries/IfxStm_cfg.o" \
+"../libraries/infineon_libraries/Ifx_AngleTrkF32.o" \
+"../libraries/infineon_libraries/Ifx_Cf32.o" \
+"../libraries/infineon_libraries/Ifx_Cfg_Ssw.o" \
+"../libraries/infineon_libraries/Ifx_Cfg_SswBmhd.o" \
+"../libraries/infineon_libraries/Ifx_CircularBuffer.asm.o" \
+"../libraries/infineon_libraries/Ifx_CircularBuffer.o" \
+"../libraries/infineon_libraries/Ifx_Crc.o" \
+"../libraries/infineon_libraries/Ifx_FftF32.o" \
+"../libraries/infineon_libraries/Ifx_FftF32_BitReverseTable.o" \
+"../libraries/infineon_libraries/Ifx_FftF32_TwiddleTable.o" \
+"../libraries/infineon_libraries/Ifx_Fifo.o" \
+"../libraries/infineon_libraries/Ifx_IntegralF32.o" \
+"../libraries/infineon_libraries/Ifx_LowPassPt1F32.o" \
+"../libraries/infineon_libraries/Ifx_LutAtan2F32.o" \
+"../libraries/infineon_libraries/Ifx_LutAtan2F32_Table.o" \
+"../libraries/infineon_libraries/Ifx_LutLSincosF32.o" \
+"../libraries/infineon_libraries/Ifx_LutLinearF32.o" \
+"../libraries/infineon_libraries/Ifx_LutSincosF32.o" \
+"../libraries/infineon_libraries/Ifx_LutSincosF32_Table.o" \
+"../libraries/infineon_libraries/Ifx_RampF32.o" \
+"../libraries/infineon_libraries/Ifx_Ssw_Infra.o" \
+"../libraries/infineon_libraries/Ifx_Ssw_Tc0.o" \
+"../libraries/infineon_libraries/Ifx_Ssw_Tc1.o" \
+"../libraries/infineon_libraries/Ifx_Ssw_Tc2.o" \
+"../libraries/infineon_libraries/Ifx_WndF32_BlackmanHarrisTable.o" \
+"../libraries/infineon_libraries/Ifx_WndF32_HannTable.o" \
+"../libraries/infineon_libraries/SpiIf.o" 
+
+
+# Each subdirectory must supply rules for building sources it contributes
+
